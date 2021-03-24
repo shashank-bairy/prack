@@ -1,5 +1,7 @@
 # Prack
 
+A CLI project manager for developers.
+
 ## Use Case
 
 | Tool name     | prack                                               |
