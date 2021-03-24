@@ -1,0 +1,16 @@
+---
+project:
+  name: Project Name
+  alias: project_alias
+  description: Project Description
+  tags:
+      - tag1
+      - tag2
+  commands:
+    command_alias:
+        - command 1
+        - command 2
+        - command 3
+    command_alias:
+        - command 1
+        - command 2

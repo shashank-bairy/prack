@@ -1,0 +1,16 @@
+---
+project:
+  name: {{ .Name }}
+  alias: {{ .Alias }}
+  description: {{ .Description }}
+  tags:
+    {{- range .Tags }}
+      - {{ . -}}
+    {{ end }}
+  commands:
+    {{- range .CommandBlocks }}
+    {{ .Alias }}:
+      {{- range .Commands }}
+        - {{ . -}}
+      {{ end -}}
+    {{ end }}
