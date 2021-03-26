@@ -1,25 +1,25 @@
 package models
 
-type Command struct {
+type CommandTable struct {
 	UUID     string `json:"uuid"`
-	CBlockID string `json:"cblock_id"`
 	Cmd      string `json:"cmd"`
-	Order    int    `json:"order"`
+	Position int    `json:"position"`
+	CBlockID string `json:"cblock_id"`
 }
 
-type CommandBlock struct {
+type CommandBlockTable struct {
 	UUID      string `json:"uuid"`
 	Alias     string `json:"alias"`
 	ProjectID string `json:"project_id"`
 }
 
-type Tag struct {
+type TagTable struct {
 	UUID      string `json:"uuid"`
 	Label     string `json:"label"`
 	ProjectID string `json:"project_id"`
 }
 
-type Project struct {
+type ProjectTable struct {
 	UUID        string `json:"uuid"`
 	Name        string `json:"name"`
 	Alias       string `json:"alias"`

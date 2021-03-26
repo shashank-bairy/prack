@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/BA1RY/prack/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,14 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("remove called")
+		if len(args) != 1 {
+			fmt.Printf("Please provide project alias as argument")
+			return
+		}
+		err := handlers.HandleRemove(args[0])
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	},
 }
 

@@ -1,16 +1,16 @@
-package initialize
+package handlers
 
 import (
 	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/BA1RY/prack/storage"
 	"github.com/BA1RY/prack/utils"
 )
 
-func GeneratePrackYAML() error {
-
-	path := filepath.Join(utils.ProjectPath, "./template/prack.yaml")
+func generatePrackYAML() error {
+	path := filepath.Join(utils.ProjectPath, "template", "prack.yaml")
 
 	in, err := os.Open(path)
 	if err != nil {
@@ -36,18 +36,24 @@ func GeneratePrackYAML() error {
 	return out.Close()
 }
 
-// type commandBlock struct {
-// 	Alias    string
-// 	Commands []string
-// }
+func HandleInit() error {
+	dbCon, err := GetDBCon()
+	if err != nil {
+		return err
+	}
 
-// type Project struct {
-// 	Name          string
-// 	Alias         string
-// 	Description   string
-// 	Tags          []string
-// 	CommandBlocks []commandBlock
-// }
+	err = storage.CreateProjectTable(dbCon.db)
+	if err != nil {
+		return err
+	}
+
+	err = generatePrackYAML()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // var project = Project{
 // 	Name:        "Project Name",

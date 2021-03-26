@@ -4,13 +4,15 @@ project:
   alias: project_alias
   description: Project Description
   tags:
-      - tag1
-      - tag2
+    - tag_1
+    - tag_2
   commands:
-    command_alias:
+    - alias: command_alias_1
+      commands:
         - command 1
         - command 2
         - command 3
-    command_alias:
+    - alias: command_alias_2
+      commands:
         - command 1
         - command 2
