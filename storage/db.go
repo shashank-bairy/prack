@@ -228,3 +228,21 @@ func RemoveProject(db *sql.DB, alias string) error {
 	}
 	return nil
 }
+
+func GetProjects(db *sql.DB) (map[string]string, error) {
+	rows, err := db.Query(`SELECT * FROM project`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projectMap = make(map[string]string)
+	for rows.Next() {
+		p := new(models.ProjectTable)
+		rows.Scan(&p.UUID, &p.Name, &p.Alias, &p.Description)
+
+		projectMap[p.Alias] = p.Name
+	}
+
+	return projectMap, nil
+}

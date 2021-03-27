@@ -51,6 +51,7 @@ func HandleAdd() error {
 		return err
 	}
 
+	// dev
 	storage.DisplayTables(dbCon.db)
 
 	return nil
@@ -81,6 +82,7 @@ func HandleRemove(alias string) error {
 		return err
 	}
 
+	// dev
 	storage.DisplayTables(dbCon.db)
 
 	return nil
@@ -117,6 +119,7 @@ func HandleUpdate() error {
 		return err
 	}
 
+	// dev
 	storage.DisplayTables(dbCon.db)
 
 	return nil
