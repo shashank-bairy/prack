@@ -10,16 +10,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func executeQuery(db *sql.DB, query string) error {
-	statement, err := db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	statement.Exec()
-	defer statement.Close()
-	return nil
-}
-
 func DisplayTables(db *sql.DB) error {
 	rows, err := db.Query(`SELECT * FROM project`)
 	if err != nil {
@@ -107,25 +97,25 @@ func CreateProjectTable(db *sql.DB) error {
 	);`
 
 	log.Println("Creating project table...")
-	err := executeQuery(db, createProjectTableSQL)
+	_, err := db.Exec(createProjectTableSQL)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Creating tag table...")
-	err = executeQuery(db, createTagTableSQL)
+	_, err = db.Exec(createTagTableSQL)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Creating commandBlock table...")
-	err = executeQuery(db, createCommandBlockTableSQL)
+	_, err = db.Exec(createCommandBlockTableSQL)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Creating command table...")
-	err = executeQuery(db, createCommandTableSQL)
+	_, err = db.Exec(createCommandTableSQL)
 	if err != nil {
 		return err
 	}
@@ -133,23 +123,20 @@ func CreateProjectTable(db *sql.DB) error {
 	return nil
 }
 
-func AddProject(db *sql.DB, p models.Project) error {
-	puuid := uuid.NewV4().String()
-	project := &models.ProjectTable{
-		UUID:        puuid,
-		Name:        p.Name,
-		Alias:       p.Alias,
-		Description: p.Description,
+func AddProject(db *sql.DB, project models.Project) error {
+	puuid, err := uuid.NewV4()
+	if err != nil {
+		return err
 	}
 
-	insertProjectSQL := fmt.Sprintf(`INSERT INTO project
+	insertProjectSQL := `INSERT INTO project
 		(uuid, name, alias, description)
 		VALUES
-		("%s", "%s", "%s", "%s")
-	;`, project.UUID, project.Name, project.Alias, project.Description)
+		(?, ?, ?, ?)
+	;`
 
 	log.Println("Adding project data to database...")
-	err := executeQuery(db, insertProjectSQL)
+	_, err = db.Exec(insertProjectSQL, puuid, project.Name, project.Alias, project.Description)
 	if err != nil {
 		return err
 	}
@@ -157,49 +144,67 @@ func AddProject(db *sql.DB, p models.Project) error {
 	insertTagsSQL := `INSERT INTO tag
 		(uuid, label, project_id)
 		VALUES
+		(?, ?, ?)
 	`
-	for _, tag := range p.Tags {
-		tuuid := uuid.NewV4().String()
-		insertTagsSQL += fmt.Sprintf(`("%s", "%s", "%s"),`, tuuid, tag, puuid)
-	}
-	insertTagsSQL = insertTagsSQL[:len(insertTagsSQL)-1]
-
-	log.Println("Adding tag data to database...")
-	err = executeQuery(db, insertTagsSQL)
+	insertTagsStmt, err := db.Prepare(insertTagsSQL)
 	if err != nil {
 		return err
 	}
 
+	log.Println("Adding tag data to database...")
+	for _, tag := range project.Tags {
+		tuuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		_, err = insertTagsStmt.Exec(tuuid.String(), tag, puuid)
+		if err != nil {
+			return err
+		}
+	}
+	defer insertTagsStmt.Close()
+
 	insertCommandBlockSQL := `INSERT INTO command_block
 		(uuid, alias, project_id)
 		VALUES
+		(?, ?, ?)
 	`
-	insertCommandsSQL := `INSERT INTO command
-		(uuid, cmd, position, cblock_id)
-		VALUES
-	`
-	for _, cb := range p.CommandBlocks {
-		cbuuid := uuid.NewV4().String()
-		insertCommandBlockSQL += fmt.Sprintf(`("%s", "%s", "%s"),`, cbuuid, cb.Alias, puuid)
-		for i, cmd := range cb.Commands {
-			cuuid := uuid.NewV4().String()
-			insertCommandsSQL += fmt.Sprintf(`("%s", "%s", %d, "%s"),`, cuuid, cmd, i+1, cbuuid)
-		}
+	insertCommandBlockStmt, err := db.Prepare(insertCommandBlockSQL)
+	if err != nil {
+		return err
 	}
-	insertCommandBlockSQL = insertCommandBlockSQL[:len(insertCommandBlockSQL)-1]
-	insertCommandsSQL = insertCommandsSQL[:len(insertCommandsSQL)-1]
 
 	log.Println("Adding command block data to database...")
-	err = executeQuery(db, insertCommandBlockSQL)
+
+	insertCommandSQL := `INSERT INTO command
+		(uuid, cmd, position, cblock_id)
+		VALUES
+		(?, ?, ?, ?)
+	`
+	insertCommandStmt, err := db.Prepare(insertCommandSQL)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Adding commands data to database...")
-	err = executeQuery(db, insertCommandsSQL)
-	if err != nil {
-		return err
+
+	for _, cb := range project.CommandBlocks {
+		cbuuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		insertCommandBlockStmt.Exec(cbuuid.String(), cb.Alias, puuid)
+		for i, cmd := range cb.Commands {
+			cuuid, err := uuid.NewV4()
+			if err != nil {
+				return err
+			}
+			insertCommandStmt.Exec(cuuid.String(), cmd, i+1, cbuuid)
+		}
 	}
+
+	defer insertCommandBlockStmt.Close()
+	defer insertCommandStmt.Close()
 
 	return nil
 }
@@ -216,8 +221,8 @@ func IsProjectPresent(db *sql.DB, alias string) (bool, error) {
 }
 
 func RemoveProject(db *sql.DB, alias string) error {
-	deleteProjectSQL := fmt.Sprintf(`DELETE FROM project WHERE alias="%s"`, alias)
-	err := executeQuery(db, deleteProjectSQL)
+	deleteProjectSQL := `DELETE FROM project WHERE alias=?`
+	_, err := db.Exec(deleteProjectSQL, alias)
 	if err != nil {
 		return err
 	}
