@@ -108,25 +108,21 @@ func CreateProjectTable(db *sql.DB) error {
 		FOREIGN KEY (cblock_id) REFERENCES command_block (uuid) ON DELETE CASCADE
 	);`
 
-	log.Println("Creating project table...")
 	_, err := db.Exec(createProjectTableSQL)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Creating tag table...")
 	_, err = db.Exec(createTagTableSQL)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Creating commandBlock table...")
 	_, err = db.Exec(createCommandBlockTableSQL)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Creating command table...")
 	_, err = db.Exec(createCommandTableSQL)
 	if err != nil {
 		return err
