@@ -65,7 +65,7 @@ project:
     - alias: frontend
       commands:
         - yarn --cwd /home/ba1ry/os/todolist/frontend start
-        - code /home/ba1ry/os/todolist/frontend
+        - code /home/ba1ry/os/todolist
     - alias: backend
       commands:
         - python3 /home/ba1ry/os/todolist/backend/server.py
