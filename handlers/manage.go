@@ -51,19 +51,10 @@ func HandleAdd() error {
 		return err
 	}
 
-	// dev
-	storage.DisplayTables(dbCon.db)
-
 	return nil
 }
 
 func HandleRemove(alias string) error {
-	// pb := new(ProjectBlock)
-	// err := readPrackYaml(pb)
-	// if err != nil {
-	// 	return err
-	// }
-
 	dbCon, err := GetDBCon()
 	if err != nil {
 		return err
@@ -81,9 +72,6 @@ func HandleRemove(alias string) error {
 	if err != nil {
 		return err
 	}
-
-	// dev
-	storage.DisplayTables(dbCon.db)
 
 	return nil
 }
@@ -118,9 +106,6 @@ func HandleUpdate() error {
 	if err != nil {
 		return err
 	}
-
-	// dev
-	storage.DisplayTables(dbCon.db)
 
 	return nil
 }

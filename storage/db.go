@@ -18,7 +18,10 @@ func DisplayTables(db *sql.DB) error {
 	defer rows.Close()
 	for rows.Next() {
 		p := new(models.ProjectTable)
-		rows.Scan(&p.UUID, &p.Name, &p.Alias, &p.Description)
+		err = rows.Scan(&p.UUID, &p.Name, &p.Alias, &p.Description)
+		if err != nil {
+			return err
+		}
 		fmt.Println(p)
 	}
 
@@ -31,7 +34,10 @@ func DisplayTables(db *sql.DB) error {
 	defer rows.Close()
 	for rows.Next() {
 		t := new(models.TagTable)
-		rows.Scan(&t.UUID, &t.Label, &t.ProjectID)
+		err = rows.Scan(&t.UUID, &t.Label, &t.ProjectID)
+		if err != nil {
+			return err
+		}
 		fmt.Println(t)
 	}
 
@@ -44,7 +50,10 @@ func DisplayTables(db *sql.DB) error {
 	defer rows.Close()
 	for rows.Next() {
 		cb := new(models.CommandBlockTable)
-		rows.Scan(&cb.UUID, &cb.Alias, &cb.ProjectID)
+		err = rows.Scan(&cb.UUID, &cb.Alias, &cb.ProjectID)
+		if err != nil {
+			return err
+		}
 		fmt.Println(cb)
 	}
 
@@ -57,7 +66,10 @@ func DisplayTables(db *sql.DB) error {
 	defer rows.Close()
 	for rows.Next() {
 		cmd := new(models.CommandTable)
-		rows.Scan(&cmd.UUID, &cmd.Cmd, &cmd.Position, &cmd.CBlockID)
+		err = rows.Scan(&cmd.UUID, &cmd.Cmd, &cmd.Position, &cmd.CBlockID)
+		if err != nil {
+			return err
+		}
 		fmt.Println(cmd)
 	}
 
@@ -236,13 +248,68 @@ func GetProjects(db *sql.DB) (map[string]string, error) {
 	}
 	defer rows.Close()
 
-	var projectMap = make(map[string]string)
+	projectMap := make(map[string]string)
 	for rows.Next() {
-		p := new(models.ProjectTable)
-		rows.Scan(&p.UUID, &p.Name, &p.Alias, &p.Description)
+		p := models.ProjectTable{}
+		err = rows.Scan(&p.UUID, &p.Name, &p.Alias, &p.Description)
+		if err != nil {
+			return nil, err
+		}
 
 		projectMap[p.Alias] = p.Name
 	}
 
 	return projectMap, nil
+}
+
+func GetCommandBlocks(db *sql.DB, projectAlias string) ([]string, error) {
+	getCommandBlocksSQL := `SELECT command_block.alias
+		FROM ((SELECT * FROM project where alias=?) project
+		INNER JOIN command_block ON project.uuid = command_block.project_id)
+	;`
+
+	rows, err := db.Query(getCommandBlocksSQL, projectAlias)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var commandBlocks []string
+	for rows.Next() {
+		var cb string
+		err = rows.Scan(&cb)
+		if err != nil {
+			return nil, err
+		}
+
+		commandBlocks = append(commandBlocks, cb)
+	}
+	return commandBlocks, err
+}
+
+func GetCommands(db *sql.DB, projectAlias string, cbAlias string) ([]string, error) {
+	getCommandsSQL := `SELECT command.cmd
+		FROM (((SELECT * FROM project where alias= ?) project
+		INNER JOIN (SELECT * FROM command_block WHERE alias= ?) command_block ON project.uuid = command_block.project_id)
+		INNER JOIN command ON command_block.uuid = command.cblock_id)
+		ORDER BY command.position ASC
+	;`
+
+	rows, err := db.Query(getCommandsSQL, projectAlias, cbAlias)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var commands []string
+	for rows.Next() {
+		var cmd string
+		err = rows.Scan(&cmd)
+		if err != nil {
+			return nil, err
+		}
+
+		commands = append(commands, cmd)
+	}
+	return commands, err
 }
