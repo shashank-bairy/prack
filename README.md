@@ -73,4 +73,4 @@ project:
 
 ## Limitation
 
-This project was built with a view that few repetitive shell commands like `cd` could be avoided typing everytime by storing them in prack.yaml. But it was later discovered that `cd` and few other commands cd are not executable commands on the file system and are internal builtin commands of the shell. This further limits the use of this project.
+This project was built with a view that few repetitive shell commands like `cd` could be avoided typing everytime by storing them in prack.yaml. But it was later discovered that `cd` and few other commands are not executable commands on the file system and are internal builtin commands of the shell. This further limits the use of this project.
