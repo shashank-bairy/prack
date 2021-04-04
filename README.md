@@ -1,6 +1,6 @@
 # Prack (Project Rack)
 
-A CLI project assistant for developers. It's used to avoid repetitive commands typed while setting up a project.
+A CLI project assistant for developers used to avoid repetitive typing of commands while opening a project.
 
 ## Glossary
 
